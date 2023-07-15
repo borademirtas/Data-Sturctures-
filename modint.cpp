@@ -1,79 +1,46 @@
-constexpr int P = 998244353;
-int norm(int x) {
-    if (x < 0) {
-        x += P;
+template<ll M>
+struct modint {
+ 
+    static ll _pow(ll n, ll k) {
+        ll r = 1;
+        for (; k > 0; k >>= 1, n = (n*n)%M)
+            if (k&1) r = (r*n)%M;
+        return r;
     }
-    if (x >= P) {
-        x -= P;
+ 
+    ll v; modint(ll n = 0) : v(n%M) { v += (M&(0-(v<0))); }
+ 
+    friend string to_string(const modint n) { return to_string(n.v); }
+    friend istream& operator>>(istream& i, modint& n) { return i >> n.v; }
+    friend ostream& operator<<(ostream& o, const modint n) { return o << n.v; }
+    template<typename T> explicit operator T() { return T(v); }
+ 
+    friend bool operator==(const modint n, const modint m) { return n.v == m.v; }
+    friend bool operator!=(const modint n, const modint m) { return n.v != m.v; }
+    friend bool operator<(const modint n, const modint m) { return n.v < m.v; }
+    friend bool operator<=(const modint n, const modint m) { return n.v <= m.v; }
+    friend bool operator>(const modint n, const modint m) { return n.v > m.v; }
+    friend bool operator>=(const modint n, const modint m) { return n.v >= m.v; }
+ 
+    modint& operator+=(const modint n) { v += n.v; v -= (M&(0-(v>=M))); return *this; }
+    modint& operator-=(const modint n) { v -= n.v; v += (M&(0-(v<0))); return *this; }
+    modint& operator*=(const modint n) { v = (v*n.v)%M; return *this; }
+    modint& operator/=(const modint n) { v = (v*_pow(n.v, M-2))%M; return *this; }
+    friend modint operator+(const modint n, const modint m) { return modint(n) += m; }
+    friend modint operator-(const modint n, const modint m) { return modint(n) -= m; }
+    friend modint operator*(const modint n, const modint m) { return modint(n) *= m; }
+    friend modint operator/(const modint n, const modint m) { return modint(n) /= m; }
+    modint& operator++() { return *this += 1; }
+    modint& operator--() { return *this -= 1; }
+    modint operator++(int) { modint t = *this; return *this += 1, t; }
+    modint operator--(int) { modint t = *this; return *this -= 1, t; }
+    modint operator+() { return *this; }
+    modint operator-() { return modint(0) -= *this; }
+ 
+    // O(logk) modular exponentiation
+    modint pow(const ll k) const {
+        return k < 0 ? _pow(v, M-1-(-k%(M-1))) : _pow(v, k);
     }
-    return x;
-}
-template<class T>
-T power(T a, ll b) {
-    T res = 1;
-    for (; b; b /= 2, a *= a) {
-        if (b % 2) {
-            res *= a;
-        }
-    }
-    return res;
-}
-struct Z {
-    int x;
-    Z(int x = 0) : x(norm(x)) {}
-    Z(ll x) : x(norm(x % P)) {}
-    int val() const {
-        return x;
-    }
-    Z operator-() const {
-        return Z(norm(P - x));
-    }
-    Z inv() const {
-        assert(x != 0);
-        return power(*this, P - 2);
-    }
-    Z &operator*=(const Z &rhs) {
-        x = int64_t(x) * rhs.x % P;
-        return *this;
-    }
-    Z &operator+=(const Z &rhs) {
-        x = norm(x + rhs.x);
-        return *this;
-    }
-    Z &operator-=(const Z &rhs) {
-        x = norm(x - rhs.x);
-        return *this;
-    }
-    Z &operator/=(const Z &rhs) {
-        return *this *= rhs.inv();
-    }
-    friend Z operator*(const Z &lhs, const Z &rhs) {
-        Z res = lhs;
-        res *= rhs;
-        return res;
-    }
-    friend Z operator+(const Z &lhs, const Z &rhs) {
-        Z res = lhs;
-        res += rhs;
-        return res;
-    }
-    friend Z operator-(const Z &lhs, const Z &rhs) {
-        Z res = lhs;
-        res -= rhs;
-        return res;
-    }
-    friend Z operator/(const Z &lhs, const Z &rhs) {
-        Z res = lhs;
-        res /= rhs;
-        return res;
-    }
-    friend std::istream &operator>>(std::istream &is, Z &a) {
-        ll v;
-        is >> v;
-        a = Z(v);
-        return is;
-    }
-    friend std::ostream &operator<<(std::ostream &os, const Z &a) {
-        return os << a.val();
-    }
+    modint inv() const { return _pow(v, M-2); }
 };
+using mod = modint<998244353>;
