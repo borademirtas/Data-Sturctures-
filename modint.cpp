@@ -33,7 +33,7 @@ struct Z {
         return power(*this, P - 2);
     }
     Z &operator*=(const Z &rhs) {
-        x = i64(x) * rhs.x % P;
+        x = int64_t(x) * rhs.x % P;
         return *this;
     }
     Z &operator+=(const Z &rhs) {
