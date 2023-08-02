@@ -1,29 +1,53 @@
-template<class T> struct LSegTree {
-	int N; vector<T> t, lz; T U=-1e18;
-	T F(T i, T j) { return max(i,j); } LSegTree() {}
-	LSegTree(int N) : N(N), t(4*(N+1),U), lz(4*(N+1),0) {}
-	void pull(int i) { t[i] = F(t[i*2],t[i*2+1]); }
-	void push(int i, int l, int r) {
-		t[i]+=lz[i];
-		if(l!=r) lz[i*2]+=lz[i], lz[i*2+1]+=lz[i];
-		lz[i]=0; }
-	void build(vector<ll> &v) { build(v,1,0,N); }
-	void build(vector<ll> &v, int i, int l, int r) {
-		if(l==r) { t[i]=v[l]; return; } int m=(l+r)/2;
-		build(v,i*2,l,m); build(v,i*2+1,m+1,r); pull(i);
-	}
-	void upd(int L, int R, T v) { upd(L,R,v,1,0,N); }
-	void upd(int L, int R, T v, int i, int l, int r) {
-		push(i,l,r); if(R<l || L>r) return;
-		if(L<=l && R>=r) { lz[i]+=v; push(i,l,r); return; }
-		int m=(l+r)/2; upd(L,R,v,i*2,l,m);
-		upd(L,R,v,i*2+1,m+1,r); pull(i);
-	}
-	T qry(int L, int R) { return qry(L,R,1,0,N); }
-	T qry(int L, int R, int i, int l, int r) {
-	push(i,l,r); if(R<l || L>r) return U;
-	if(L<=l && R>=r) return t[i]; int m=(l+r)/2;
-	return F(qry(L,R,i*2,l,m), qry(L,R,i*2+1,m+1,r));
-	}
+struct segtree{
+    struct node{
+        int value,add;
+    };
+    int size;
+    vector <node> tree;
+    void init(int n){
+        size=1;
+        while(size<n) size*=2;
+        tree.assign(size*2-1,{0,0});
+    }
+    void propagate(int x,int lx,int rx){
+        if(rx-lx>1){
+            int m=(lx+rx)/2;
+            tree[2*x+1].value+=tree[x].add;
+            tree[2*x+1].add+=tree[x].add;
+            tree[2*x+2].value+=tree[x].add;
+            tree[2*x+2].add+=tree[x].add;
+            tree[x].add=0;
+        }
+    }
+    void add(int l,int r,int v,int x,int lx,int rx){
+        propagate(x,lx,rx);
+        if(l<=lx && rx<=r){
+            tree[x].value+=v;
+            tree[x].add+=v;
+            return;
+        }
+        if(l>=rx || r<=lx){
+            return;
+        }
+        int m=(lx+rx)/2;
+        add(l,r,v,2*x+1,lx,m);
+        add(l,r,v,2*x+2,m,rx);
+        tree[x].value=min(tree[2*x+1].value,tree[2*x+2].value);
+    }
+    void add(int l,int r,int v){
+        add(l,r,v,0,0,size);
+    }
+    int get(int l,int r,int x,int lx,int rx){
+        propagate(x,lx,rx);
+        if(l<=lx && rx<=r){
+            return tree[x].value;
+        }
+        if(l>=rx || r<=lx){ return INT_MAX; }
+        int m=(lx+rx)/2;
+        int m1=get(l,r,2*x+1,lx,m);
+        int m2=get(l,r,2*x+2,m,rx);
+        return min(m1,m2);
+    }
+	int get(int l,int r){return get(l,r,0,0,size);}
 };
 
