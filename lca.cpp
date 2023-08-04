@@ -1,22 +1,22 @@
 struct lca {
-	int lg;
-	vector<vector<int>> memo;
-	vector<int> depth, subSize;
+	ll lg;
+	vector<vector<ll>> memo;
+	vector<ll> depth, subSize;
  
-	lca(const vector<vector<int>>& adj, int root) :
-		lg(32 - __builtin_clz(adj.size()|1)),
-		memo(adj.size(), vector<int>(lg)),
+	lca(const vector<vector<ll>>& adj, ll root) :
+		lg(32 - __builtin_clzll(adj.size()|1LL)),
+		memo(adj.size(), vector<ll>(lg)),
 		depth(adj.size()),
 		subSize(adj.size()) {
 		dfs(root, root, adj);
 	}
  
-	void dfs(int node, int par, const vector<vector<int>>& adj) {
+	void dfs(ll node, ll par, const vector<vector<ll>>& adj) {
 		memo[node][0] = par;
 		subSize[node] = 1;
-		for (int i = 1; i < lg; ++i)
+		for (ll i = 1; i < lg; ++i)
 			memo[node][i] = memo[memo[node][i - 1]][i - 1];
-		for (int to : adj[node]) {
+		for (ll to : adj[node]) {
 			if (to == par) continue;
 			depth[to] = 1 + depth[node];
 			dfs(to, node, adj);
@@ -24,18 +24,18 @@ struct lca {
 		}
 	}
  
-	int kthPar(int node, int k) const {
-		for (int bit = 0; bit < lg; bit++)
+	ll kthPar(ll node, int k) const {
+		for (ll bit = 0; bit < lg; bit++)
 			if (k & (1 << bit))
 				node = memo[node][bit];
 		return node;
 	}
  
-	int getLca(int x, int y) const {
+	ll getLca(ll x, ll y) const {
 		if (depth[x] < depth[y]) swap(x, y);
 		x = kthPar(x, depth[x] - depth[y]);
 		if (x == y) return x;
-		for (int bit = lg - 1; bit >= 0; bit--)
+		for (ll bit = lg - 1; bit >= 0; bit--)
 			if (memo[x][bit] != memo[y][bit]) {
 				x = memo[x][bit];
 				y = memo[y][bit];
@@ -44,7 +44,7 @@ struct lca {
 		return memo[x][0];
 	}
  
-	int distEdges(int x, int y) const {
+	ll distEdges(ll x, ll y) const {
 		return depth[x] + depth[y] - 2 * depth[getLca(x, y)];
 	}
 };
