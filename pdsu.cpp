@@ -2,7 +2,7 @@ struct DSU {
     vll time, par; vector<vll> version, sz;
     DSU(int N) {
         time.resize(N); par.resize(N); version.resize(N); sz.resize(N);
-        for(ll i = 0; i < N; i++){par[i]=i; version[i].pb(0); sz[i].pb(0);}
+        for(ll i = 0; i < N; i++){par[i]=i; version[i].pb(0); sz[i].pb(1);}
     }
     int get(int x, int t) {
          if(par[x]==x||time[x]>t){return x;}
