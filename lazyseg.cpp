@@ -1,62 +1,51 @@
-struct segtree{
-    struct node{
-        ll value,add;
-    };
-    ll size;
-    vector <node> tree;
- 
-    void init(ll n){
-        size=1;
-        while(size<n) size*=2;
-        tree.assign(size*2-1,{0LL,0LL});
+
+struct Node {
+    const ll inf = 1e18;
+    Node *l = 0, *r = 0;
+    ll lo, hi, mset = inf, madd = 0, val = -inf;
+    Node(ll lo,ll hi):lo(lo),hi(hi){} // Large interval of -inf
+    Node(vector<ll>& v, ll lo, ll hi) : lo(lo), hi(hi) {
+        if (lo + 1 < hi) {
+            ll mid = lo + (hi - lo)/2;
+            l = new Node(v, lo, mid); r = new Node(v, mid, hi);
+            val = max(l->val, r->val);
+        }
+        else val = v[lo];
     }
- 
-    void propagate(ll x,ll lx,ll rx){
-        if(rx-lx>1){
-            int m=(lx+rx)/2;
-            tree[2*x+1].value+=tree[x].add;
-            tree[2*x+1].add+=tree[x].add;
-            tree[2*x+2].value+=tree[x].add;
-            tree[2*x+2].add+=tree[x].add;
-            tree[x].add=0;
+    ll query(ll L, ll R) {
+        if (R <= lo || hi <= L) return -inf;
+        if (L <= lo && hi <= R) return val;
+        push();
+        return max(l->query(L, R), r->query(L, R));
+    }
+    void set(ll L, ll R, ll x) {
+        if (R <= lo || hi <= L) return;
+        if (L <= lo && hi <= R) mset = val = x, madd = 0;
+        else {
+            push(), l->set(L, R, x), r->set(L, R, x);
+            val = max(l->val, r->val);
         }
     }
- 
-    void add(ll l,ll r,ll v,ll x,ll lx,ll rx){
-        propagate(x,lx,rx);
-        if(l<=lx && rx<=r){
-            tree[x].value+=v;
-            tree[x].add+=v;
-            return;
+    void add(ll L, ll R, ll x) {
+        if (R <= lo || hi <= L) return;
+        if (L <= lo && hi <= R) {
+            if (mset != inf) mset += x;
+            else madd += x;
+            val += x;
         }
-        if(l>=rx || r<=lx){
-            return;
+        else {
+            push(), l->add(L, R, x), r->add(L, R, x);
+            val = max(l->val, r->val);
         }
-        int m=(lx+rx)/2;
-        add(l,r,v,2*x+1,lx,m);
-        add(l,r,v,2*x+2,m,rx);
-        tree[x].value=min(tree[2*x+1].value,tree[2*x+2].value);
     }
- 
-    void add(ll l,ll r,ll v){
-        add(l,r,v,0LL,0LL,size);
-    }
- 
-    ll get(ll l,ll r,ll x,ll lx,ll rx){
-        propagate(x,lx,rx);
-        if(l<=lx && rx<=r){
-            return tree[x].value;
+    void push() {
+        if (!l) {
+            ll mid = lo + (hi - lo)/2;
+            l = new Node(lo, mid); r = new Node(mid, hi);
         }
-        if(l>=rx || r<=lx){
-            return INT_MAX;
-        }
-        int m=(lx+rx)/2;
-        int m1=get(l,r,2*x+1,lx,m);
-        int m2=get(l,r,2*x+2,m,rx);
-        return min(m1,m2);
-    }
- 
-    ll get(ll l,ll r){
-        return get(l,r,0LL,0LL,size);
+        if (mset != inf)
+            l->set(lo,hi,mset), r->set(lo,hi,mset), mset = inf;
+        else if (madd)
+            l->add(lo,hi,madd), r->add(lo,hi,madd), madd = 0;
     }
 };
