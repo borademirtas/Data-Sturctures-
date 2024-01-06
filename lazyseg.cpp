@@ -1,51 +1,66 @@
-
-struct Node {
-    const ll inf = 1e18;
-    Node *l = 0, *r = 0;
-    ll lo, hi, mset = inf, madd = 0, val = -inf;
-    Node(ll lo,ll hi):lo(lo),hi(hi){} // Large interval of -inf
-    Node(vector<ll>& v, ll lo, ll hi) : lo(lo), hi(hi) {
-        if (lo + 1 < hi) {
-            ll mid = lo + (hi - lo)/2;
-            l = new Node(v, lo, mid); r = new Node(v, mid, hi);
-            val = max(l->val, r->val);
-        }
-        else val = v[lo];
+struct lazy_segment_tree{
+    using T = ll;
+    using U = array<ll, 2>;
+    T value_identity = 0;
+    U update_identity = array<ll, 2>({1, 0});
+    T join(T x, T y){
+        return x + y;
     }
-    ll query(ll L, ll R) {
-        if (R <= lo || hi <= L) return -inf;
-        if (L <= lo && hi <= R) return val;
-        push();
-        return max(l->query(L, R), r->query(L, R));
+    void assign(int length, U u, T& x){
+        auto& [a, b] = u;
+        x = a * x + b * length;
     }
-    void set(ll L, ll R, ll x) {
-        if (R <= lo || hi <= L) return;
-        if (L <= lo && hi <= R) mset = val = x, madd = 0;
-        else {
-            push(), l->set(L, R, x), r->set(L, R, x);
-            val = max(l->val, r->val);
-        }
+    void lazy_assign(U u1, U& u2){
+        auto &[a, b] = u1; // new update
+        auto [c, d] = u2; // old update;
+        u2 = array<ll, 2>({a * c, a * d + b});
     }
-    void add(ll L, ll R, ll x) {
-        if (R <= lo || hi <= L) return;
-        if (L <= lo && hi <= R) {
-            if (mset != inf) mset += x;
-            else madd += x;
-            val += x;
-        }
-        else {
-            push(), l->add(L, R, x), r->add(L, R, x);
-            val = max(l->val, r->val);
-        }
+    vector<T> st;
+    vector<U> lazy;
+    int n;
+    lazy_segment_tree(int _n) : st(4 * _n, value_identity), lazy(4 * _n, update_identity), n(_n) {}
+    int ql = -1, qr = -1;
+    T query(int l, int r){
+        ql = l, qr = r;
+        return query_impl(1, 0, n - 1);
     }
-    void push() {
-        if (!l) {
-            ll mid = lo + (hi - lo)/2;
-            l = new Node(lo, mid); r = new Node(mid, hi);
+    void push(int v, int length){
+        if(v >= 2 * n) return;
+        int left_length = (length + 1) / 2;
+        int right_length = length / 2;
+        lazy_assign(lazy[v], lazy[2 * v]);
+        assign(left_length, lazy[v], st[2 * v]);
+        lazy_assign(lazy[v], lazy[2 * v + 1]);
+        assign(right_length, lazy[v], st[2 * v + 1]);
+        lazy[v] = update_identity;
+        //assert(st[v] == join(st[2 * v], st[2 * v + 1]));
+    }
+    T query_impl(int v, int l, int r){
+        int length = r - l + 1;
+        push(v, length);
+        int mid = (l + r) / 2;
+        if(qr < l || ql > r) return value_identity;
+        if(ql <= l && r <= qr) return st[v];
+        return join(query_impl(2 * v, l, mid), query_impl(2 * v + 1, mid + 1, r));
+    }
+    U qu;
+    void update(int l, int r, U u){
+        ql = l, qr = r, qu = u;
+        update_impl(1, 0, n - 1);
+    }
+    void update_impl(int v, int l, int r){
+        int length = r - l + 1;
+        push(v, length);
+        if(qr < l || ql > r) return;
+        if(ql <= l && r <= qr){
+            lazy[v] = qu;
+            assign(length, lazy[v], st[v]);
+            return;
         }
-        if (mset != inf)
-            l->set(lo,hi,mset), r->set(lo,hi,mset), mset = inf;
-        else if (madd)
-            l->add(lo,hi,madd), r->add(lo,hi,madd), madd = 0;
+        int mid = (l + r) / 2;
+        update_impl(2 * v, l, mid);
+        update_impl(2 * v + 1, mid + 1, r);
+        st[v] = join(st[2 * v], st[2 * v + 1]);
     }
 };
+
