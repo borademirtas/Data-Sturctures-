@@ -1,4 +1,9 @@
-vll factorial(SET+1); ll mod = SET;
-void calc(){factorial[0] = 1; for(ll i = 1; i < factorial.size(); i++){factorial[i] = factorial[i-1] * i; factorial[i] %= mod;}}
-ll inverse(ll a, ll m){ll m0 = m; ll y = 0, x = 1;  while (a > 1) { ll q = a / m; ll t = m; m = a % m, a = t; t = y; y = x - q * y; x = t;} if (x < 0){x += m0;}return x;}
-ll nCr(ll n, ll k, ll m) {return factorial[n] * inverse(factorial[k] * factorial[n - k] % m, m) % m;}
+ll mod = 1e9+7;
+vll invt, inv,fac;
+void precalc(ll n){
+    invt.resize(n+5); fac.resize(n+5); inv.resize(n+5); invt[1] = 1; fac[0] = 1; inv[0]=1; inv[1]=1;
+    for(ll i = 1; i < fac.size(); i++){fac[i] = fac[i-1] * i; fac[i] %= mod;}
+    for(ll i=2; i<=n; i++){ invt[i] = (mod - ((mod/i)*invt[mod%i])%mod)%mod;}
+    for(ll i = 1; i <= n; i++){inv[i]=invt[i]*inv[i-1]%mod;}
+}
+ll ncr(ll n, ll k) {if(k>n){return 0;} return fac[n] * inv[n-k] % mod * inv[k] % mod;}
