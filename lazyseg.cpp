@@ -63,4 +63,5 @@ struct lazy_segment_tree{
         st[v] = join(st[2 * v], st[2 * v + 1]);
     }
 };
+// 1 = increment, 0 = set
 
