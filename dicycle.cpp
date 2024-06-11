@@ -19,6 +19,11 @@ pair<bool, vll> dicycle(vector<vll> adj){
         return false;
     };
 
+    for (int v = 0; v < n; v++) {
+        if (color[v] == 0 && dfs(v,dfs)){break;}
+    }
+    
+    
     if(cycle_start==-1){return {false, cycle};}
     else{
         cycle.push_back(cycle_start);
