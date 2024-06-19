@@ -7,7 +7,7 @@ struct DiGraph{
         g[u].push_back(v);
         gt[v].push_back(u);
     }
-private:
+    private:
     vector<int> _ts;
     vector<uint8_t> _ts_vis;
     void _ts_dfs(int u){
@@ -18,7 +18,7 @@ private:
         }
         _ts.push_back(u);
     }
-public:
+    public:
     vector<int> topological_sort(){
         _ts_vis.assign(n, 0);
         _ts.assign(0, 0);
@@ -27,7 +27,7 @@ public:
         reverse(_ts.begin(), _ts.end());
         return std::move(_ts);
     }
-private:
+    private:
     vector<int> _scc_label;
     int scc_count = 0;
     void _scc_dfs(int u){
@@ -37,7 +37,7 @@ private:
             _scc_dfs(v);
         }
     }
-public:
+    public:
     pair<DiGraph, vector<int>> decompose_scc(){
         _scc_label.assign(n, -1);
         vector<int> ord = topological_sort();
@@ -61,3 +61,4 @@ public:
     int size(){
         return n;
     }
+};
